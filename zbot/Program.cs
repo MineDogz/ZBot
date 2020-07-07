@@ -1,20 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace zbot
 {
     class Program
     {
-
+        //
+        // privates
+        //
         static private string title = "ZBot";
         static private string processName = "rs2client";
         static private Process process = null;
+        static private int windowWidth = 1920;
+        static private int windowHeight = 1080;
+        static private int windowX = 0;
+        static private int windowY = 0;
 
+        //
+        // Main thread
+        //
         static void Main(string[] args)
         {
             Start();
@@ -22,16 +27,22 @@ namespace zbot
             if (process != null)
             {
                 Log("Found!");
-                SetWindow(process);
+                SetWindow(process, windowX, windowY, windowWidth, windowHeight);
             }
             Console.ReadLine();
         }
 
+        //
+        // Easyer to log.
+        //
         static void Log(string input)
         {
             Console.WriteLine(input);
         }
 
+        //
+        // First function
+        //
         static void Start()
         {
             Log("Started!");
@@ -40,6 +51,9 @@ namespace zbot
             Log("Title set.");
         }
 
+        //
+        // Find window.
+        //
         static Process GetProcess()
         {
             Log("Getting process: " + processName);
@@ -47,22 +61,26 @@ namespace zbot
             {
                 return Process.GetProcessesByName(processName)[0];
             }
-            catch (Exception err)
+            catch (Exception)
             {
-                Log(err.Message);
+                //Log(err.Message);
+                Log("Could not find runescape :(");
                 return null;
             }
         }
 
+        //
+        // get desktop window
+        //
         [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
         static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
 
-
+        //
+        // set desktop window
+        //
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool SetWindowPos(IntPtr hWnd,
-            IntPtr hWndInsertAfter, int X, int Y, int cx, int cy,
-            SetWindowPosFlags uFlags);
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
         [Flags()]
         private enum SetWindowPosFlags : uint
         {
@@ -83,16 +101,13 @@ namespace zbot
             ShowWindow = 0x0040,
         }
 
-        public static void SetWindow(Process p)
+        //
+        // Set window function
+        //
+        public static void SetWindow(Process p, int x, int y, int width, int height)
         {
-            int width = int.Parse("1920");
-            int height = int.Parse("1080");
-            int x = int.Parse("0");
-            int y = int.Parse("0");
-
             IntPtr window = FindWindowByCaption(IntPtr.Zero, p.MainWindowTitle);
-            SetWindowPos(window, IntPtr.Zero,
-                x, y, width, height, 0);
+            SetWindowPos(window, IntPtr.Zero, x, y, width, height, 0);
         }
     }
 }
